@@ -1,7 +1,8 @@
 # settings
+# Plagiated from https://alexandra-zaharia.github.io/posts/python-configuration-and-dataclasses/
+
 from configparser import ConfigParser
 from dataclasses import dataclass
-
 
 @dataclass
 class Sections:
@@ -23,17 +24,9 @@ class Config(Sections):
     def __init__(self, raw_config_parser):
         Sections.__init__(self, raw_config_parser)
 
-
 conf = ConfigParser()
 conf.read('./settings.ini')
 
 if __name__ == "__main__":
-   constants = ConfigParser()
-   constants.read("./settings.ini")
-   print( repr( constants) )
-   print( constants.get("constants", "nr_of_rares") )
-
-new_config = Config(conf)
-# [mysection]
-# mykey = 1
-print (new_config.constants.nr_of_rares)
+    new_config = Config(conf)
+    print ("new_config.constants.nr_of_rares:", new_config.constants.nr_of_rares)
