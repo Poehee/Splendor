@@ -11,9 +11,6 @@ class Color(Enum):
     WILD=GOLD
     RARE=PINK    
 
-class Scroll():
-  def assign( self, )
-
 if __name__ == "__main__":
     print( Color(3) )         #Color.RED
     print( Color.GOLD.value ) #1
