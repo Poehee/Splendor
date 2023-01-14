@@ -4,6 +4,7 @@ from typing import Any
 from settings import config
 from math import floor, ceil
 
+import copy
 import random
 
 class Clockwise(Enum):
@@ -43,8 +44,11 @@ class Chips:
 
 class Bag:
     def __init__(self) -> None:
+        self.chips: list = []
+        pass
+
+    def fill_with_full_set(self):
         self.chips = Chips().get_full_set() #When bag is instantiated, directly fill it with all the chips
-        #self.chips = random.shuffle(Chips().full_set) #When bag is instantiated, directly fill it with all the chips
         random.shuffle(self.chips) #Chips are in a black, blind bag
 
     def draw_chip(self) -> int:
@@ -59,7 +63,7 @@ class Board:
         assert(len(self.squares[0])==len(self.squares[1])) #Board needs to be a square
         
         self.middle=[floor(len(self.squares[0])/2),floor(len(self.squares[1])/2)]
-        self.flat_board = self.rolled_inside_out()
+        self.flattened_board = self.rolled_inside_out()
 
     def rolled_inside_out(self) -> list:
         from itertools import cycle # https://stackoverflow.com/questions/36828526/moving-from-one-enum-state-to-the-next-and-cycling-through
@@ -89,7 +93,7 @@ class Board:
         increase_nr_of_steps = False
         max_len_flat_board   = config.constants.board_size**2
         while True:
-            if len(flat_board) >=  max_len_flat_board:
+            if len(flat_board) >= max_len_flat_board:
                 break
             for _ in range(nr_of_straight_steps):
                 walk(direction)
@@ -108,8 +112,14 @@ class Board:
         # then 2 down [3,2], [3,3]. Then 3 left [2,3], [1,3], [0,3].
         # Then 3 up: [0,2], [0,1], [0,0] -- long sides left now: [1,0], [2,0], [3,0], [4,0]
         # Right side: [4,1], [4,2], [4,3], [4,4] en bottom last: [3,4], [2,4], [1,4], [0,4]. All done... 
-        for chip in bag:
-            pass
+#        print("self.flattened_board[0][0]", self.flattened_board[3][1])
+        temp_flattened_board = copy.deepcopy(self.flattened_board)
+        chip = bag.draw_chip()
+        while (chip != None) and (len(temp_flattened_board) > 0):
+            x,y = temp_flattened_board.pop(0)
+            if self.squares[x][y] == None:
+                self.squares[x][y] = chip
+                chip = bag.draw_chip()
 
 if __name__ == "__main__":
     print(Color(3))                # Color.BLUE
@@ -120,9 +130,18 @@ if __name__ == "__main__":
 
     board = Board()
     print("Squares=" + str(board.squares))
-    print("rolled_inside_out:" + str(board.flat_board))
+    print("rolled_inside_out:" + str(board.flattened_board))
     
     bag = Bag()
+    bag.fill_with_full_set()
+
     print("bag.chips=" + str(bag.chips))
-    print("Now what, no more chips - what happens when we draw? We get...(expect None):")
-    print(bag.draw_chip())
+    board.fill_from_bag(bag)
+
+    print("bag.chips=" + str(bag.chips))
+    assert(len(bag.chips)==0)
+
+    print("Squares=" + str(board.squares))
+    print("rolled_inside_out:" + str(board.flattened_board))
+    assert(len(board.flattened_board)==config.constants.board_size**2) #no tampering with board.flattened_board
+    
